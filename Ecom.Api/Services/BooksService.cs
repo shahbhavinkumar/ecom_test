@@ -53,7 +53,6 @@ namespace Ecom.Api.Services
                              .Select(grouped => new { Date = grouped.Key, TotalWorks = grouped.Count() });
             }
 
-
             if (book.WorkKey != null)
             {
                 BookSearch? bookPresent = booksCache!.FirstOrDefault(x =>x.WorkKey == book.WorkKey);
@@ -93,8 +92,6 @@ namespace Ecom.Api.Services
             }
 
             return fileNamePath;
-
-
         }
 
         private string SaveDataToJsonFile(BookInformation bookInfoObject)

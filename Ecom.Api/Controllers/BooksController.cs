@@ -21,25 +21,41 @@ namespace Ecom.Api.Controllers
 
 
         [HttpGet, Route("gettotalnumberofworks")]
+      
         public async Task<IActionResult> GetTotalNumberofWorks()
         {
          
-            await _booksService.GetTotalNumberOfWorksAsync();
-            return Ok();
+            var result =  await _booksService.GetTotalNumberOfWorksAsync();
+            return Ok(result);
         }
 
         [HttpGet, Route("getworksbyrating")]
+        [ProducesResponseType(typeof(TotalWorksByDate), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetWorksByRating(int rating)
         {
-
-            await _booksService.GetWorkKeyForRatings(rating);
-            return Ok();
+            if (rating > 0)
+            {
+                var works = await _booksService.GetWorkKeyForRatings(rating);
+                return Ok(works);
+            }
+            else
+            {
+                return BadRequest();
+            }
         }
 
 
         [HttpGet, Route("searchBook")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> SearchBook(string? works, int? rating)
         {
+            if(works == null & rating == null)
+            {
+                return BadRequest();
+            }
+
             BookSearch bookSearchObject = new BookSearch()
             {
                 WorkKey = works,
