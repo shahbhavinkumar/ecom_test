@@ -11,8 +11,9 @@ namespace Ecom.Api.Services
 {
     public interface IBooksService
     {
-        public Task SearchBookAsync(BookSearch book);
+        public Task<string> SearchBookAsync(BookSearch book);
         Task<List<TotalWorksByDate>> GetTotalNumberOfWorksAsync();
+        Task<List<string>> GetWorkKeyForRatings(int rating);
     }
 
     public class BooksService: IBooksService
@@ -36,20 +37,16 @@ namespace Ecom.Api.Services
                                         .Build();
         }
 
-        public async Task SearchBookAsync(BookSearch book)
+        public async Task<string> SearchBookAsync(BookSearch book)
         {
-            if(booksCache == null)
+            string fileNamePath = default!;
+
+            if (booksCache == null)
             {
                 await PopulateCacheAsync();      
             }
 
-            if (book.Rating != null)
-            {
-                var result = booksCache!
-                   .Where(item => item.Rating == book.Rating)
-                   .Select(item => item.WorkKey!.Split('/').Last());
-            }
-
+        
             if (book.WorkKey == null & book.Rating == null)
             {
                 var result = booksCache!.GroupBy(item => item.Date)
@@ -90,17 +87,22 @@ namespace Ecom.Api.Services
                         }
                     }
 
-                    SaveDataToJsonFile(bookInfoObject);
+                    fileNamePath = SaveDataToJsonFile(bookInfoObject);
 
                 }
             }
 
+            return fileNamePath;
+
+
         }
 
-        private void SaveDataToJsonFile(BookInformation bookInfoObject)
+        private string SaveDataToJsonFile(BookInformation bookInfoObject)
         {
             string json = System.Text.Json.JsonSerializer.Serialize(bookInfoObject);
-            File.WriteAllText(@"D:\path.json", json);
+            var url = _configuration.GetValue<string>(@"Data:SaveJsonFilePath") + Guid.NewGuid() + ".json";
+            File.WriteAllText(url, json);
+            return url;
         }
 
         private async Task<List<BookSearch>> PopulateCacheAsync()
@@ -167,27 +169,6 @@ namespace Ecom.Api.Services
             return books;
         }
 
-        //un-used not going this route
-       /* public string HttpGet(string url)
-        {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-
-            try
-            {
-                using (Stream stream = response.GetResponseStream())
-                {
-                    StreamReader reader = new StreamReader(stream);
-
-                    return reader.ReadToEnd();
-                }
-            }
-            finally
-            {
-                response.Close();
-            }
-        }*/
-
         public async Task<List<TotalWorksByDate>> GetTotalNumberOfWorksAsync()
         {
             List<TotalWorksByDate> totalWorksByDate = new List<TotalWorksByDate>();
@@ -201,6 +182,18 @@ namespace Ecom.Api.Services
                              .Select(grouped => new TotalWorksByDate { Date = grouped.Key, CountOfWorks = grouped.Count() }).ToList();
 
             return result;
+        }
+
+        public async Task<List<string>> GetWorkKeyForRatings(int rating)
+        {
+            if (booksCache == null)
+            {
+                await PopulateCacheAsync();
+            }
+
+            return booksCache!
+                .Where(item => item.Rating == rating)
+                .Select(item => item.WorkKey!.Split('/').Last()).ToList();
         }
     }
 }

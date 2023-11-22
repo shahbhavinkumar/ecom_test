@@ -19,16 +19,6 @@ namespace Ecom.Api.Controllers
             _booksService = booksService;
         }
 
-        /* //This method will take in the file which has data about keys, edition etc. 
-         //and populate it in the cache object
-         [HttpGet, Route("populateCache")]
-         public IActionResult PopulateCache()
-         {
-
-             _booksService.PopulateCacheAsync();
-             return Ok();
-         }
-        */
 
         [HttpGet, Route("gettotalnumberofworks")]
         public async Task<IActionResult> GetTotalNumberofWorks()
@@ -38,6 +28,13 @@ namespace Ecom.Api.Controllers
             return Ok();
         }
 
+        [HttpGet, Route("getworksbyrating")]
+        public async Task<IActionResult> GetWorksByRating(int rating)
+        {
+
+            await _booksService.GetWorkKeyForRatings(rating);
+            return Ok();
+        }
 
 
         [HttpGet, Route("searchBook")]
