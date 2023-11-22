@@ -47,12 +47,6 @@ namespace Ecom.Api.Services
             }
 
         
-            if (book.WorkKey == null & book.Rating == null)
-            {
-                var result = booksCache!.GroupBy(item => item.Date)
-                             .Select(grouped => new { Date = grouped.Key, TotalWorks = grouped.Count() });
-            }
-
             if (book.WorkKey != null)
             {
                 BookSearch? bookPresent = booksCache!.FirstOrDefault(x =>x.WorkKey == book.WorkKey);
@@ -70,24 +64,29 @@ namespace Ecom.Api.Services
                         {
                             using (var content = response.Content)
                             {
-                                 var jsonContent = await content.ReadAsStringAsync();
+                                var jsonContent = await content.ReadAsStringAsync();
 
-                                 var jsonDocument = JsonDocument.Parse(jsonContent);
+                                var jsonDocument = JsonDocument.Parse(jsonContent);
 
-                                 var root = jsonDocument.RootElement;
-                                
+                                var root = jsonDocument.RootElement;
 
-                                 bookInfoObject.Title = root.GetProperty("title").GetString();
+
+                                bookInfoObject.Title = root.GetProperty("title").GetString();
 
                                 // JsonElement subjectsElement = root.GetProperty("subjects");
                                 // bookInfoObject.Subjects = subjectsElement.EnumerateArray().Select(subject => subject.GetString()).ToList();
-                                
+
                             }
                         }
                     }
 
                     fileNamePath = SaveDataToJsonFile(bookInfoObject);
 
+                }
+
+                else
+                {
+                    return "Work Not Found";
                 }
             }
 

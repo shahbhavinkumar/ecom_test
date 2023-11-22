@@ -21,7 +21,6 @@ namespace Ecom.Api.Controllers
 
 
         [HttpGet, Route("gettotalnumberofworks")]
-      
         public async Task<IActionResult> GetTotalNumberofWorks()
         {
          
