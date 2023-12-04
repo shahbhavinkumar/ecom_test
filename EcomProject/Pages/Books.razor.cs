@@ -4,6 +4,7 @@ using Ecom.Shared;
 using EcomProject.Service;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using System.IO;
 using static System.Net.WebRequestMethods;
 
 namespace EcomProject.Pages
@@ -36,8 +37,11 @@ namespace EcomProject.Pages
                 {
                     fileName = await _bookService.SearchBookInFile(WorkKey.ToString());
                 }
+                else if(Ratings != null && WorkKey != null)
+                {
+                    throw new IOException("Cannot have both the fields populated");
+                }
 
-                StateHasChanged();
             }
 
             catch (Exception ex)
