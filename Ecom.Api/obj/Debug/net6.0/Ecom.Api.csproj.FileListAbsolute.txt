@@ -31,11 +31,11 @@ D:\CipiProject\Ecom\Test\Ecom.Api\bin\Debug\net6.0\Ecom.Shared.exe
 D:\CipiProject\Ecom\Test\Ecom.Api\bin\Debug\net6.0\Ecom.Shared.dll
 D:\CipiProject\Ecom\Test\Ecom.Api\bin\Debug\net6.0\Ecom.Shared.pdb
 D:\CipiProject\Ecom\Test\Ecom.Api\bin\Debug\net6.0\Newtonsoft.Json.dll
-D:\Ecom\ecom_test\Ecom.Api\bin\Debug\net6.0\appsettings.Development.json
-D:\Ecom\ecom_test\Ecom.Api\bin\Debug\net6.0\appsettings.json
 D:\Ecom\ecom_test\Ecom.Api\bin\Debug\net6.0\Ecom.Shared.deps.json
 D:\Ecom\ecom_test\Ecom.Api\bin\Debug\net6.0\Ecom.Shared.runtimeconfig.json
 D:\Ecom\ecom_test\Ecom.Api\bin\Debug\net6.0\Ecom.Shared.exe
+D:\Ecom\ecom_test\Ecom.Api\bin\Debug\net6.0\appsettings.Development.json
+D:\Ecom\ecom_test\Ecom.Api\bin\Debug\net6.0\appsettings.json
 D:\Ecom\ecom_test\Ecom.Api\bin\Debug\net6.0\Ecom.Api.exe
 D:\Ecom\ecom_test\Ecom.Api\bin\Debug\net6.0\Ecom.Api.deps.json
 D:\Ecom\ecom_test\Ecom.Api\bin\Debug\net6.0\Ecom.Api.runtimeconfig.json

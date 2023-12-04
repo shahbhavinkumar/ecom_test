@@ -29,6 +29,7 @@
       "Microsoft.Extensions.Primitives.dll": "sha256-jOmoWSfsdQexH\/6QCA56gR1RMEqeix2iDDUBWbpAOQI=",
       "Microsoft.JSInterop.dll": "sha256-VTDsn6SPPfuGAfSeAJqyeJVv0xlxI\/TRuqXq4mB7L4o=",
       "Microsoft.JSInterop.WebAssembly.dll": "sha256-05A\/QcCaG+1uiEdUF\/oP5gkPxXlFFcIE2lX1FjtoGwE=",
+      "Newtonsoft.Json.dll": "sha256-IsZJ91\/OW+fHzNqIgEc7Y072ns8z9dGritiSyvR9Wgc=",
       "System.IO.Pipelines.dll": "sha256-6+E55JXedimdw1c1bDtVg4K7XuWjVWVTifH8QpfzXSY=",
       "Microsoft.CSharp.dll": "sha256-BV\/rFR+iIFuQ+iMFF9+YYxwpZJ91zw5pC6QhTzk3+Rg=",
       "Microsoft.VisualBasic.Core.dll": "sha256-ReVyBChor1eIStClYNO44h\/i4fyPOJxm43xZegD6VXk=",
@@ -196,13 +197,15 @@
       "mscorlib.dll": "sha256-MnMyZHtcymf0sLxXeFBbQZVsdNdxT0GXJaa9t3ZdSek=",
       "netstandard.dll": "sha256-+SGdnDhVMiZ9hq0EsYwJ+mcK0odf3bAtXnSKLorGDCs=",
       "System.Private.CoreLib.dll": "sha256-mqfalNg3wC8XHlyA+j5ioNcnc0kt4prNudKdyJoaYaU=",
-      "EcomProject.dll": "sha256-PExbz1zd0cQdf0tpFJ5VxIz+hBM0EeFX8O0z55IdQzY="
+      "Ecom.Shared.dll": "sha256-m1eWNu33B86S16tuxLPi1h3Y6g+ncsrriwD2CH6kif8=",
+      "EcomProject.dll": "sha256-vr4k7+d6ahNEZ04hawffwPMNc3tn+j1OdJcJNwbj5v8="
     },
     "extensions": null,
     "lazyAssembly": null,
     "libraryInitializers": null,
     "pdb": {
-      "EcomProject.pdb": "sha256-VrDf0KoJnefOBViNT6LHhYUrRVqO5wAs6yMPLaU5lPI="
+      "Ecom.Shared.pdb": "sha256-nD0GdCXwcS\/RB\/73ZBpOTH9\/RHpsKMQYsubTfk9jqNk=",
+      "EcomProject.pdb": "sha256-9F78TdbgscF5USkNsREtTyNtQsF3AciAwpuKqHXxwYo="
     },
     "runtime": {
       "dotnet.6.0.9.ob3hkkiquu.js": "sha256-Azk5sbYFVo84h8NpIst9roIPGLH2y8ewQ9SY\/sUHvgs=",

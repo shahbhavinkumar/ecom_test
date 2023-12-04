@@ -2,3 +2,63 @@
 @inject HttpClient _client
 
 <h3>Books</h3>
+
+
+<input id="ratings" @bind="@Ratings" type="text" DisplayName="Rating" placeholder="Ratings" />
+<input id="workkey" type="text" @bind="@WorkKey" DisplayName="WorkKey" placeholder="WorkKey" />
+<button type="submit" @onclick="SubmitChanges">Submit</button>
+
+<p>@DisplayMessage</p>
+
+@if (listOfTotalWorks != null)
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Count of Works</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <Virtualize Items="listOfTotalWorks" Context="totalWorks" >
+            
+                <tr>
+                    <td>@totalWorks.Date.ToString("yyyy-MM-dd")</td>
+                    <td>@totalWorks.CountOfWorks</td>
+                </tr>
+            
+            </Virtualize>
+        </tbody>
+</table>
+
+
+}
+
+@if(listOfKeys != null)
+{
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Keys</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <Virtualize Items="listOfKeys">
+                <ItemContent>
+                    @{
+                        var key = context as string;
+                    }
+
+                    <tr>
+                        <td>@key</td>
+                    </tr>
+                </ItemContent>
+            </Virtualize>
+
+           
+        </tbody>
+    </table>
+}

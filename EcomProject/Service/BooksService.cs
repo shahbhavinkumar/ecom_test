@@ -1,90 +1,95 @@
 ﻿
 
+using Ecom.Shared;
+using Microsoft.AspNetCore.Components;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.Data;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Reflection.Metadata;
+using static System.Net.WebRequestMethods;
+
 namespace EcomProject.Service
 {
     public interface IBooksService
     {
-       void LoadFileIntoCache();
+        Task<List<TotalWorksByDate>?> GetTotalNumberOfWorks();
+        Task<List<string>?> GetWorkKeysBasedOnRating(int rating);
+        void SearchBookInFile(string key);
     }
 
     public class BooksService : IBooksService
     {
-        private void SearchBookInFile(string key)
+        public void SearchBookInFile(string key)
         {
 
         }
 
-        public void LoadFileIntoCache()
+    
+        public async Task<List<TotalWorksByDate>?> GetTotalNumberOfWorks()
         {
-          //  string filePath = @"searchFile.txt";
+            List<TotalWorksByDate>? list = new();
 
-            // Specify the full path to the text file on the D: drive
-            string filePath = @"D:\path\to\your\file.txt";
+        
+            using (var client = new HttpClient())
+            {
 
+                    UriBuilder builder = new UriBuilder("https://localhost:5010/api/books/gettotalnumberofworks");
 
+                    var response = await client.GetAsync(builder.Uri);
 
-            // Use StreamReader to read the contents of the file
+                    list = await response.Content.ReadFromJsonAsync<List<TotalWorksByDate>>();
+            }   
+         
+
+            return list;
+        }
+
+        public async Task<List<string>?> GetWorkKeysBasedOnRating(int rating)
+        {
+
+            List<string?> result = null;
+
+            // Build the query string
+            string queryString = $"?rating={rating}";
+
+            // Combine the API endpoint with the query string
+            string fullUrl = $"{"https://localhost:5010/api/books/getworksbyrating"}{queryString}";
+
             try
             {
-                using (StreamReader reader = new StreamReader(filePath))
+                using (var client = new HttpClient())
                 {
-                    string line;
-                    while ((line = reader.ReadLine()) != null)
+                    HttpResponseMessage response = await client.GetAsync(fullUrl);
+
+                    if (response.IsSuccessStatusCode)
                     {
-                        Console.WriteLine(line);
+                        // Read and display the response content
+                        result = await response.Content.ReadFromJsonAsync<List<string>>();
+
+                       // result = JsonConvert.DeserializeObject<List<string?>>(responseBody);
+
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Error: {response.StatusCode} - {response.ReasonPhrase}");
                     }
                 }
+
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"An error occurred: {ex.Message}");
+                //implement logging and error handling
             }
-            /*  try
-              {
-                   DataTable datatable = new DataTable();
-                   string fileName = @"D:\searchFile.txt";
 
-                   string filePath = System.IO.Path.GetFullPath("D:/searchFile.txt");
+            return result;
 
-                   StreamReader streamreader = new StreamReader(filePath);
-
-                  /*
-                   char[] delimiter = new char[] { '\t' };
-                   string[] columnheaders = new string[] { "WorkKey", "Edition", "Rating", "Date" };// streamreader.ReadLine().Split(delimiter);
-                   foreach (string columnheader in columnheaders)
-                   {
-                       datatable.Columns.Add(columnheader); // I've added the column headers here.
-                   }
-
-                   while (streamreader.Peek() > 0)
-                   {
-                       DataRow datarow = datatable.NewRow();
-                       datarow.ItemArray = streamreader.ReadLine().Split(delimiter);
-                       datatable.Rows.Add(datarow);
-                   }
-
-              }
-              catch (Exception ex)
-              {
-
-              }*/
-            /* foreach (DataRow row in datatable.Rows)
-             {
-                 Console.WriteLine("----Row No: " + datatable.Rows.IndexOf(row) + "----");
-
-                 foreach (DataColumn column in datatable.Columns)
-                 {
-                     //check what columns you need
-                     if (column.ColumnName == "Column2" ||
-                         column.ColumnName == "Column12" ||
-                         column.ColumnName == "Column45")
-                     {
-                         Console.Write(column.ColumnName);
-                         Console.Write(" ");
-                         Console.WriteLine(row[column]);
-                     }
-                 }
-             }*/
         }
+
+
+        
     }
 }

@@ -9,7 +9,8 @@ namespace Ecom.Shared
     public class BookInformation
     {
         public string? Title { get; set; }
-        public List<string>? Subjects { get; set; }
+        public string? FirstSubject { get; set; }
+        public string? AuthorName { get; set; }
     }
 
     public class TotalWorksByDate

@@ -1,5 +1,6 @@
 ﻿
 
+using Ecom.Shared;
 using EcomProject.Service;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -10,27 +11,38 @@ namespace EcomProject.Pages
     partial class Books
     {
         [Inject] private IBooksService _bookService { get; set; } = default!;
+        public int? Ratings { get; set; }
+        public string? WorkKey { get; set; }
+        public string? DisplayMessage { get; set; }
+        public List<TotalWorksByDate>? listOfTotalWorks { get; set; }
+        public List<string>? listOfKeys { get; set; }
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
+        private async Task SubmitChanges()
         {
+            listOfTotalWorks = null;
+
             try
             {
-                // Specify the full path to the text file on the D: drive
-                string filePath = @"D:\searchFile.txt";
+                if(Ratings == null && WorkKey == null)
+                {
+                    listOfTotalWorks = await _bookService.GetTotalNumberOfWorks();
+                }
+                else if(Ratings != null && WorkKey == null)
+                {
+                    listOfKeys = await _bookService.GetWorkKeysBasedOnRating(int.Parse(Ratings.Value.ToString()));
+                }
+                else if(Ratings == null && WorkKey != null)
+                {
 
-                // var mardownFile = System.IO.File.ReadAllText($"{System.IO.Directory.GetCurrentDirectory()}{@"\wwwroot\sample-data\searchFile.txt"}");
+                }
 
-                var xx = System.IO.Directory.GetCurrentDirectory();
-
-                var byteofthefile = await _client.GetByteArrayAsync("sample-data/searchFile.txt");
-
-
+                StateHasChanged();
             }
+
             catch (Exception ex)
             {
-
+                DisplayMessage = ex.Message;
             }
-
         }
      }
 }

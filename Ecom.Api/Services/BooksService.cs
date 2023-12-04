@@ -37,61 +37,6 @@ namespace Ecom.Api.Services
                                         .Build();
         }
 
-        public async Task<string> SearchBookAsync(BookSearch book)
-        {
-            string fileNamePath = default!;
-
-            if (booksCache == null)
-            {
-                await PopulateCacheAsync();      
-            }
-
-        
-            if (book.WorkKey != null)
-            {
-                BookSearch? bookPresent = booksCache!.FirstOrDefault(x =>x.WorkKey == book.WorkKey);
-
-                if (bookPresent != null)
-                {
-                    var url = _configuration.GetValue<string>(@"Data:EndPointURL") != null ? _configuration.GetValue<string>(@"Data:EndPointURL") : "https://openlibrary.org";
-
-                    url = url + bookPresent.WorkKey + ".json";
-
-
-                    using (var httpClient = new HttpClient())
-                    {
-                        using (var response = await httpClient.GetAsync(url))
-                        {
-                            using (var content = response.Content)
-                            {
-                                var jsonContent = await content.ReadAsStringAsync();
-
-                                var jsonDocument = JsonDocument.Parse(jsonContent);
-
-                                var root = jsonDocument.RootElement;
-
-
-                                bookInfoObject.Title = root.GetProperty("title").GetString();
-
-                                // JsonElement subjectsElement = root.GetProperty("subjects");
-                                // bookInfoObject.Subjects = subjectsElement.EnumerateArray().Select(subject => subject.GetString()).ToList();
-
-                            }
-                        }
-                    }
-
-                    fileNamePath = SaveDataToJsonFile(bookInfoObject);
-
-                }
-
-                else
-                {
-                    return "Work Not Found";
-                }
-            }
-
-            return fileNamePath;
-        }
 
         private string SaveDataToJsonFile(BookInformation bookInfoObject)
         {
@@ -191,5 +136,95 @@ namespace Ecom.Api.Services
                 .Where(item => item.Rating == rating)
                 .Select(item => item.WorkKey!.Split('/').Last()).ToList();
         }
+
+        public async Task<string> SearchBookAsync(BookSearch book)
+        {
+            if (booksCache == null)
+            {
+                await PopulateCacheAsync();
+            }
+
+            if (book.WorkKey == null)
+            {
+                return "Work Key is required.";
+            }
+
+            BookSearch? bookPresent = booksCache?.FirstOrDefault(x => x.WorkKey == book.WorkKey);
+
+            if (bookPresent == null)
+            {
+                return "Work Not Found";
+            }
+
+            var endPointUrl = _configuration.GetValue<string>("Data:EndPointURL") ?? "https://openlibrary.org";
+            var bookUrl = $"{endPointUrl}{bookPresent.WorkKey}.json";
+
+            using var httpClient = new HttpClient();
+            using var response = await httpClient.GetAsync(bookUrl);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return "Error fetching book information.";
+            }
+
+            var jsonContent = await response.Content.ReadAsStringAsync();
+            var jsonDocument = JsonDocument.Parse(jsonContent);
+            var root = jsonDocument.RootElement;
+
+            var bookInfoObject = new BookInformation(); // Assuming you have a BookInfo class to store book information.
+
+            bookInfoObject.Title = root.GetProperty("title").GetString();
+            bookInfoObject.FirstSubject = GetFirstElementValue(root, "subjects");
+            bookInfoObject.AuthorName = GetAuthorName(root, "authors", httpClient).Result;
+
+            string fileNamePath = SaveDataToJsonFile(bookInfoObject);
+
+            return fileNamePath;
+        }
+
+        private string? GetFirstElementValue(JsonElement root, string propertyName)
+        {
+            if (root.TryGetProperty(propertyName, out var subjectsElement) && subjectsElement.ValueKind == JsonValueKind.Array)
+            {
+                var firstSubjectElement = subjectsElement.EnumerateArray().FirstOrDefault();
+
+                return firstSubjectElement.GetString();
+            }
+
+            return null;
+        }
+
+        private async Task<string?> GetAuthorName(JsonElement root, string propertyName, HttpClient httpClient)
+        {
+            if (root.TryGetProperty(propertyName, out var authorsElement) && authorsElement.ValueKind == JsonValueKind.Array)
+            {
+                var authorURL = authorsElement.EnumerateArray().FirstOrDefault();
+
+                if ( authorURL.TryGetProperty("author", out var authorKeyElement) && authorKeyElement.ValueKind == JsonValueKind.Object)
+                {
+                    string authorKey = authorKeyElement.GetProperty("key").GetString();
+
+                    if (!string.IsNullOrEmpty(authorKey))
+                    {
+                        var aURL = _configuration.GetValue<string>("Data:EndPointURL") ?? "https://openlibrary.org";
+                        var authorUrl = $"{aURL}{authorKey}.json";
+
+                        using var aResponse = await httpClient.GetAsync(authorUrl);
+
+                        if (aResponse.IsSuccessStatusCode)
+                        {
+                            var ajsonContent = await aResponse.Content.ReadAsStringAsync();
+                            var ajsonDocument = JsonDocument.Parse(ajsonContent);
+                            var aroot = ajsonDocument.RootElement;
+
+                            return aroot.GetProperty("personal_name").GetString();
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
     }
 }

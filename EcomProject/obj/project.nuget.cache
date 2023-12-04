@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "Y+Nbk1cVKtuztkTVGqaNx35RS9qP//t+ixEFYLSsBdJES2+07RpDnHIBOq/GCq186saWD2FVivpO3TvABEy2+w==",
+  "dgSpecHash": "gYop4nlAAwwEv6KARKSS9jgN2lGqr50fdtbUsJJg2nanyEqu/hZWhZ7hJJvflI2Rl3xi+36CktfDqkSQQkS2ig==",
   "success": true,
   "projectFilePath": "D:\\Ecom\\ecom_test\\EcomProject\\EcomProject.csproj",
   "expectedPackageFiles": [
@@ -28,6 +28,7 @@
     "C:\\Users\\BShah\\.nuget\\packages\\microsoft.extensions.primitives\\6.0.0\\microsoft.extensions.primitives.6.0.0.nupkg.sha512",
     "C:\\Users\\BShah\\.nuget\\packages\\microsoft.jsinterop\\6.0.24\\microsoft.jsinterop.6.0.24.nupkg.sha512",
     "C:\\Users\\BShah\\.nuget\\packages\\microsoft.jsinterop.webassembly\\6.0.24\\microsoft.jsinterop.webassembly.6.0.24.nupkg.sha512",
+    "C:\\Users\\BShah\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
     "C:\\Users\\BShah\\.nuget\\packages\\system.diagnostics.diagnosticsource\\6.0.0\\system.diagnostics.diagnosticsource.6.0.0.nupkg.sha512",
     "C:\\Users\\BShah\\.nuget\\packages\\system.io.pipelines\\6.0.3\\system.io.pipelines.6.0.3.nupkg.sha512",
     "C:\\Users\\BShah\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",

@@ -7,8 +7,9 @@ using System.Data;
 
 namespace Ecom.Api.Controllers
 {
+
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
     public class BooksController : Controller
     {
 
@@ -21,44 +22,29 @@ namespace Ecom.Api.Controllers
 
 
         [HttpGet, Route("gettotalnumberofworks")]
-        public async Task<IActionResult> GetTotalNumberofWorks()
+        public async Task<List<TotalWorksByDate>> GetTotalNumberofWorks()
         {
-         
             var result =  await _booksService.GetTotalNumberOfWorksAsync();
-            return Ok(result);
+            return result;
         }
+
+      
 
         [HttpGet, Route("getworksbyrating")]
-        [ProducesResponseType(typeof(TotalWorksByDate), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetWorksByRating(int rating)
+        public async Task<List<string>> Get([FromQuery] int rating)
         {
-            if (rating > 0)
-            {
-                var works = await _booksService.GetWorkKeyForRatings(rating);
-                return Ok(works);
-            }
-            else
-            {
-                return BadRequest();
-            }
+            return await _booksService.GetWorkKeyForRatings(rating);
         }
 
-
-        [HttpGet, Route("searchBook")]
+        [HttpGet, Route("searchBook")] ///works/OL1629179W
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> SearchBook(string? works, int? rating)
+        public async Task<IActionResult> SearchBook(string works)
         {
-            if(works == null & rating == null)
-            {
-                return BadRequest();
-            }
-
+            
             BookSearch bookSearchObject = new BookSearch()
             {
                 WorkKey = works,
-                Rating = rating
             };
 
             await _booksService.SearchBookAsync(bookSearchObject);
