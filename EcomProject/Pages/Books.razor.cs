@@ -16,6 +16,7 @@ namespace EcomProject.Pages
         public string? DisplayMessage { get; set; }
         public List<TotalWorksByDate>? listOfTotalWorks { get; set; }
         public List<string>? listOfKeys { get; set; }
+        public string? fileName { get; set; }
 
         private async Task SubmitChanges()
         {
@@ -33,7 +34,7 @@ namespace EcomProject.Pages
                 }
                 else if(Ratings == null && WorkKey != null)
                 {
-
+                    fileName = await _bookService.SearchBookInFile(WorkKey.ToString());
                 }
 
                 StateHasChanged();

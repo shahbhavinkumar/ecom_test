@@ -1,6 +1,7 @@
 ﻿
 
 using Ecom.Shared;
+using EcomProject.Pages;
 using Microsoft.AspNetCore.Components;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -18,26 +19,49 @@ namespace EcomProject.Service
     {
         Task<List<TotalWorksByDate>?> GetTotalNumberOfWorks();
         Task<List<string>?> GetWorkKeysBasedOnRating(int rating);
-        void SearchBookInFile(string key);
+        Task<string> SearchBookInFile(string key);
     }
 
     public class BooksService : IBooksService
     {
-        public void SearchBookInFile(string key)
+        private readonly string url = "https://localhost:5010/";
+        public async Task<string> SearchBookInFile(string works)
         {
+            string fileName = default!;
 
+
+            string queryString = $"?works={works}";
+
+            string fullUrl = $"{url+"api/books/searchBook"}{queryString}";
+
+            using (var client = new HttpClient())
+            {
+                HttpResponseMessage response = await client.GetAsync(fullUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    fileName = await response.Content.ReadAsStringAsync();
+
+                }
+                else
+                {
+                    Console.WriteLine($"Error: {response.StatusCode} - {response.ReasonPhrase}");
+                }
+            }
+
+
+            return fileName;
         }
 
-    
+
         public async Task<List<TotalWorksByDate>?> GetTotalNumberOfWorks()
         {
             List<TotalWorksByDate>? list = new();
 
-        
             using (var client = new HttpClient())
             {
 
-                    UriBuilder builder = new UriBuilder("https://localhost:5010/api/books/gettotalnumberofworks");
+                    UriBuilder builder = new UriBuilder(url+"api/books/gettotalnumberofworks");
 
                     var response = await client.GetAsync(builder.Uri);
 
@@ -53,21 +77,16 @@ namespace EcomProject.Service
 
             List<string?> result = null;
 
-            // Build the query string
             string queryString = $"?rating={rating}";
 
-            // Combine the API endpoint with the query string
-            string fullUrl = $"{"https://localhost:5010/api/books/getworksbyrating"}{queryString}";
+            string fullUrl = $"{url+"api/books/getworksbyrating"}{queryString}";
 
-            try
-            {
                 using (var client = new HttpClient())
                 {
                     HttpResponseMessage response = await client.GetAsync(fullUrl);
 
                     if (response.IsSuccessStatusCode)
                     {
-                        // Read and display the response content
                         result = await response.Content.ReadFromJsonAsync<List<string>>();
 
                        // result = JsonConvert.DeserializeObject<List<string?>>(responseBody);
@@ -79,11 +98,7 @@ namespace EcomProject.Service
                     }
                 }
 
-            }
-            catch (Exception ex)
-            {
-                //implement logging and error handling
-            }
+          
 
             return result;
 

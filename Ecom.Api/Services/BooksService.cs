@@ -151,11 +151,17 @@ namespace Ecom.Api.Services
 
             BookSearch? bookPresent = booksCache?.FirstOrDefault(x => x.WorkKey == book.WorkKey);
 
+
             if (bookPresent == null)
             {
                 return "Work Not Found";
             }
 
+            /*if(bookPresent.Edition != null)
+            {
+                bookPresent = booksCache?.FirstOrDefault(x => x.Edition == book.Edition);
+            }
+            */
             var endPointUrl = _configuration.GetValue<string>("Data:EndPointURL") ?? "https://openlibrary.org";
             var bookUrl = $"{endPointUrl}{bookPresent.WorkKey}.json";
 
