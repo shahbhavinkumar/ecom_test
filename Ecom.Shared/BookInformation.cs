@@ -10,7 +10,6 @@ namespace Ecom.Shared
     {
         public string? Title { get; set; }
         public string? FirstSubject { get; set; }
-        public string? AuthorName { get; set; }
         public List<string>? AuthorNameList { get; set; } = new List<string>();
     }
 

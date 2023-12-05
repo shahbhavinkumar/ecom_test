@@ -36,10 +36,12 @@ namespace Ecom.Api.Controllers
             return await _booksService.GetWorkKeyForRatings(rating);
         }
 
+       
+
         [HttpGet, Route("searchBook")] //input example : OL1629179W
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> SearchBook(string works)
+        public async Task<IActionResult> SearchBookWithEdition(string works)
         {
             if (works == null) return BadRequest();
 
@@ -48,7 +50,7 @@ namespace Ecom.Api.Controllers
                 WorkKey = "/works/" + works,
             };
 
-            string result = await _booksService.SearchBookAsync(bookSearchObject);
+            string result = await _booksService.SearchBookAsyncWithEdition(bookSearchObject);
             return Ok(result);
         }
     }

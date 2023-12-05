@@ -11,9 +11,9 @@ namespace Ecom.Api.Services
 {
     public interface IBooksService
     {
-        public Task<string> SearchBookAsync(BookSearch book);
         Task<List<TotalWorksByDate>> GetTotalNumberOfWorksAsync();
         Task<List<string>> GetWorkKeyForRatings(int rating);
+        public Task<string> SearchBookAsyncWithEdition(BookSearch book);
     }
 
     public class BooksService: IBooksService
@@ -137,8 +137,9 @@ namespace Ecom.Api.Services
                 .Select(item => item.WorkKey!.Split('/').Last()).ToList();
         }
 
-        public async Task<string> SearchBookAsync(BookSearch book)
+        public async Task<string> SearchBookAsyncWithEdition(BookSearch book)
         {
+            bool isEditionPresent = false;
             if (booksCache == null)
             {
                 await PopulateCacheAsync();
@@ -157,10 +158,17 @@ namespace Ecom.Api.Services
                 return "Work Not Found";
             }
 
-          
             var endPointUrl = _configuration.GetValue<string>("Data:EndPointURL") ?? "https://openlibrary.org";
             var bookUrl = $"{endPointUrl}{bookPresent.WorkKey}.json";
 
+
+            if (bookPresent.Edition != null && !string.IsNullOrEmpty(bookPresent.Edition))
+            {
+                isEditionPresent = true;
+                bookUrl = $"{endPointUrl}{bookPresent.Edition}.json";
+            }
+
+           
             using var httpClient = new HttpClient();
             using var response = await httpClient.GetAsync(bookUrl);
 
@@ -173,7 +181,7 @@ namespace Ecom.Api.Services
             var jsonDocument = JsonDocument.Parse(jsonContent);
             var root = jsonDocument.RootElement;
 
-            var bookInfoObject = new BookInformation(); 
+            var bookInfoObject = new BookInformation();
 
             if (root.TryGetProperty("title", out var title))
             {
@@ -181,64 +189,68 @@ namespace Ecom.Api.Services
             }
 
             bookInfoObject.FirstSubject = GetFirstElementValue(root, "subjects");
-            bookInfoObject.AuthorName = GetAuthorName(root, "authors", httpClient).Result;
 
+            await GetAuthorDetails(jsonContent, httpClient, endPointUrl, bookInfoObject, isEditionPresent);
 
             var editionURL = $"{endPointUrl}{bookPresent.WorkKey}" + "/editions.json";
             var editionUrlResponse = await httpClient.GetAsync(editionURL);
 
-            if (editionUrlResponse.IsSuccessStatusCode)
-            {
-                var editionjsonContent = await editionUrlResponse.Content.ReadAsStringAsync();
 
-                if (editionjsonContent != null)
-                {
-                    var jsonObject = JsonConvert.DeserializeObject<JObject>(editionjsonContent);
-
-                    var entriesArray = jsonObject["entries"] as JArray;
-
-                    if (entriesArray != null)
-                    {
-                        foreach (var entry in entriesArray)
-                        {
-                            var authorsArray = entry["authors"] as JArray;
-
-                            if (authorsArray != null)
-                            {
-                                foreach (var author in authorsArray)
-                                {
-                                    var authorKey = author["key"];
-
-                                    var authorUrl = $"{endPointUrl}{authorKey}.json";
-
-                                    using var aResponse = await httpClient.GetAsync(authorUrl);
-
-                                    if (aResponse.IsSuccessStatusCode)
-                                    {
-                                        var ajsonContent = await aResponse.Content.ReadAsStringAsync();
-                                        var ajsonDocument = JsonDocument.Parse(ajsonContent);
-                                        var aroot = ajsonDocument.RootElement;
-
-                                        if (aroot.TryGetProperty("personal_name", out var personalNameProperty))
-                                        {
-                                            if (!bookInfoObject.AuthorNameList!.Contains(personalNameProperty.ToString()!))
-                                            {
-                                                bookInfoObject.AuthorNameList.Add(personalNameProperty.ToString());
-                                            }
-                                        }
-
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-           
             string fileNamePath = SaveDataToJsonFile(bookInfoObject);
 
             return fileNamePath;
         }
+
+        private async Task GetAuthorDetails(string jsonDocument, HttpClient httpClient, string endPointUrl, BookInformation bookInfoObject, bool isEditionPresent)
+        {
+
+            var jsonObject = JsonConvert.DeserializeObject<JObject>(jsonDocument);
+
+            var authorsArray = jsonObject["authors"] as JArray;
+
+            if (authorsArray != null)
+            {
+
+                foreach (var author in authorsArray)
+                {
+                    var authorKey = author["key"];
+
+                    if(!isEditionPresent)
+                        authorKey = author.SelectToken("author.key")?.ToString();
+
+                    var authorUrl = $"{endPointUrl}{authorKey}.json";
+
+                    using var aResponse = await httpClient.GetAsync(authorUrl);
+
+                    if (aResponse.IsSuccessStatusCode)
+                    {
+                        var ajsonContent = await aResponse.Content.ReadAsStringAsync();
+                        var ajsonDocument = JsonDocument.Parse(ajsonContent);
+                        var aroot = ajsonDocument.RootElement;
+
+                        if (aroot.TryGetProperty("personal_name", out var personalNameProperty))
+                        {
+                            if (!bookInfoObject.AuthorNameList!.Contains(personalNameProperty.ToString()!))
+                            {
+                                bookInfoObject.AuthorNameList.Add(personalNameProperty.ToString());
+                            }
+                        }
+                        else if (aroot.TryGetProperty("name", out var name))
+                        {
+                            if (!bookInfoObject.AuthorNameList!.Contains(personalNameProperty.ToString()!))
+                            {
+                                bookInfoObject.AuthorNameList!.Add(name.ToString());
+                            }
+                        }
+
+                    }
+                  
+                }
+
+
+            }
+        }
+
 
         private string? GetFirstElementValue(JsonElement root, string propertyName)
         {
@@ -252,41 +264,7 @@ namespace Ecom.Api.Services
             return null;
         }
 
-        private async Task<string?> GetAuthorName(JsonElement root, string propertyName, HttpClient httpClient)
-        {
-            if (root.TryGetProperty(propertyName, out var authorsElement) && authorsElement.ValueKind == JsonValueKind.Array)
-            {
-                var authorURL = authorsElement.EnumerateArray().FirstOrDefault();
 
-                if ( authorURL.TryGetProperty("author", out var authorKeyElement) && authorKeyElement.ValueKind == JsonValueKind.Object)
-                {
-                    string authorKey = authorKeyElement.GetProperty("key").GetString();
-
-                    if (!string.IsNullOrEmpty(authorKey))
-                    {
-                        var aURL = _configuration.GetValue<string>("Data:EndPointURL") ?? "https://openlibrary.org";
-                        var authorUrl = $"{aURL}{authorKey}.json";
-
-                        using var aResponse = await httpClient.GetAsync(authorUrl);
-
-                        if (aResponse.IsSuccessStatusCode)
-                        {
-                            var ajsonContent = await aResponse.Content.ReadAsStringAsync();
-                            var ajsonDocument = JsonDocument.Parse(ajsonContent);
-                            var aroot = ajsonDocument.RootElement;
-
-                            if (aroot.TryGetProperty("personal_name", out var personalNameProperty))
-                            {
-                                return personalNameProperty.GetString();
-                            }
-                            return null;
-                        }
-                    }
-                }
-            }
-
-            return null;
-        }
 
     }
 }
