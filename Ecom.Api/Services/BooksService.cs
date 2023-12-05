@@ -157,11 +157,7 @@ namespace Ecom.Api.Services
                 return "Work Not Found";
             }
 
-            /*if(bookPresent.Edition != null)
-            {
-                bookPresent = booksCache?.FirstOrDefault(x => x.Edition == book.Edition);
-            }
-            */
+          
             var endPointUrl = _configuration.GetValue<string>("Data:EndPointURL") ?? "https://openlibrary.org";
             var bookUrl = $"{endPointUrl}{bookPresent.WorkKey}.json";
 
@@ -177,12 +173,68 @@ namespace Ecom.Api.Services
             var jsonDocument = JsonDocument.Parse(jsonContent);
             var root = jsonDocument.RootElement;
 
-            var bookInfoObject = new BookInformation(); // Assuming you have a BookInfo class to store book information.
+            var bookInfoObject = new BookInformation(); 
 
-            bookInfoObject.Title = root.GetProperty("title").GetString();
+            if (root.TryGetProperty("title", out var title))
+            {
+                bookInfoObject.Title = title.GetString();
+            }
+
             bookInfoObject.FirstSubject = GetFirstElementValue(root, "subjects");
             bookInfoObject.AuthorName = GetAuthorName(root, "authors", httpClient).Result;
 
+
+            var editionURL = $"{endPointUrl}{bookPresent.WorkKey}" + "/editions.json";
+            var editionUrlResponse = await httpClient.GetAsync(editionURL);
+
+            if (editionUrlResponse.IsSuccessStatusCode)
+            {
+                var editionjsonContent = await editionUrlResponse.Content.ReadAsStringAsync();
+
+                if (editionjsonContent != null)
+                {
+                    var jsonObject = JsonConvert.DeserializeObject<JObject>(editionjsonContent);
+
+                    var entriesArray = jsonObject["entries"] as JArray;
+
+                    if (entriesArray != null)
+                    {
+                        foreach (var entry in entriesArray)
+                        {
+                            var authorsArray = entry["authors"] as JArray;
+
+                            if (authorsArray != null)
+                            {
+                                foreach (var author in authorsArray)
+                                {
+                                    var authorKey = author["key"];
+
+                                    var authorUrl = $"{endPointUrl}{authorKey}.json";
+
+                                    using var aResponse = await httpClient.GetAsync(authorUrl);
+
+                                    if (aResponse.IsSuccessStatusCode)
+                                    {
+                                        var ajsonContent = await aResponse.Content.ReadAsStringAsync();
+                                        var ajsonDocument = JsonDocument.Parse(ajsonContent);
+                                        var aroot = ajsonDocument.RootElement;
+
+                                        if (aroot.TryGetProperty("personal_name", out var personalNameProperty))
+                                        {
+                                            if (!bookInfoObject.AuthorNameList!.Contains(personalNameProperty.ToString()!))
+                                            {
+                                                bookInfoObject.AuthorNameList.Add(personalNameProperty.ToString());
+                                            }
+                                        }
+
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+           
             string fileNamePath = SaveDataToJsonFile(bookInfoObject);
 
             return fileNamePath;
@@ -223,7 +275,11 @@ namespace Ecom.Api.Services
                             var ajsonDocument = JsonDocument.Parse(ajsonContent);
                             var aroot = ajsonDocument.RootElement;
 
-                            return aroot.GetProperty("personal_name").GetString();
+                            if (aroot.TryGetProperty("personal_name", out var personalNameProperty))
+                            {
+                                return personalNameProperty.GetString();
+                            }
+                            return null;
                         }
                     }
                 }
