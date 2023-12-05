@@ -36,11 +36,13 @@ namespace EcomProject.Pages
                 else if(Ratings == null && WorkKey != null)
                 {
                     fileName = await _bookService.SearchBookInFile(WorkKey.ToString());
+                    WorkKey = null; //some ui issues with blazor so have to set it to null
                 }
                 else if(Ratings != null && WorkKey != null)
                 {
                     throw new IOException("Cannot have both the fields populated");
                 }
+
 
             }
 
